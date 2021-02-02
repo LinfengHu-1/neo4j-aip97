@@ -13,8 +13,8 @@ K8S_GB_MEM=8 # max of 64 ("")
 SPAWN_INTERACTIVE_SHELL=YES
 K8S_DOCKER_IMAGE="neo4j:4.2"
 NEO4J_AUTH="neo4j/test"
-
 POD_NAME="neo4j"
+LAUNCH_IN_BACKGROUND=false
 
 # Create neo4j directory structuyre if it doesn't already exist
 mkdir -p -m 0700 ${K8S_HOME_DIR}/neo4j/{logs,data,import}
@@ -36,4 +36,21 @@ PROXY_PORT=7474:7687
 K8S_ENTRYPOINT="/docker-entrypoint.sh"
 K8S_ENTRYPOINT_ARGS_EXPANDED="neo4j"
 
-exec launch-env.sh -S "$@"
+Enable cmd-line options for setting pod_name and whether running pod in background
+while getopts n:b o
+do	case "$o" in
+	n)	
+    POD_NAME=$OPTARG
+    ;;
+	b)	
+    LAUNCH_IN_BACKGROUND=true
+	esac
+done
+
+if $LAUNCH_IN_BACKGROUND
+then 
+  exec launch-env.sh -S -b "$@"
+else 
+  exec launch-env.sh -S "$@"
+fi
+
